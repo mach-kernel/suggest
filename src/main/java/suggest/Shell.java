@@ -29,7 +29,7 @@ public final class Shell {
   }
 
   private static Scanner scanner = new Scanner(System.in);
-  private final Map<String, ShellCommandEntry> commands = new HashMap<String, ShellCommandEntry>();
+  private final Map<String, ShellCommandEntry> commands = new HashMap<>();
 
   Shell() {
     this.commands.put("help", new ShellCommandEntry(
@@ -80,4 +80,4 @@ public final class Shell {
         System.out.printf("%s -- %s\n", command, entry.description)
     );
   }
-}
+} 
