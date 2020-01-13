@@ -1,5 +1,8 @@
 package suggest.store;
 
+import suggest.Pair;
+import java.util.stream.Stream;
+
 public interface Store {
   public final class RankedQuery {
     public final String query;
@@ -11,6 +14,12 @@ public interface Store {
       this.rank = rank;
     }
   }
+
+  /**
+   * Get all queries (id, meta)
+   * @return
+   */
+  public Stream<Pair<Long, RankedQuery>> allQueries();
 
   /**
    * Add a query to the store

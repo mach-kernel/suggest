@@ -4,13 +4,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.io.BufferedReader;
 import java.util.Optional;
-import java.util.stream.Stream;
 import java.io.IOException;
 
-public final class FileLoader implements Loader {
-  public Optional<Stream<String>> data;
-
-  public void load(String[] args) {
+public final class FileLoader extends Loader {
+  public void connect(String[] args) {
     if (args.length < 1) {
       System.out.println("Error: must provide a path argument");
       return;

@@ -1,19 +1,31 @@
 package suggest.store;
+import suggest.Pair;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-public class InMemoryStore implements Store {
-  private AtomicBoolean sealed = new AtomicBoolean(false);
-  private ConcurrentHashMap<String, Long> fullToCount = new ConcurrentHashMap<>();
-  private ConcurrentHashMap<String, List<Long>> fragmentToSuggestion = new ConcurrentHashMap<>();
-  private ConcurrentHashMap<Long, RankedQuery> fullQueries = new ConcurrentHashMap<>();
-  private AtomicLong idSerial = new AtomicLong(0);
+public final class InMemoryStore implements Store {
+  private final AtomicBoolean sealed = new AtomicBoolean(false);
+  private final ConcurrentHashMap<String, Long> fullToCount = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, List<Long>> fragmentToSuggestion = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Long, RankedQuery> fullQueries = new ConcurrentHashMap<>();
+  private final AtomicLong idSerial = new AtomicLong(0);
+
+  public Stream<Pair<Long, RankedQuery>> allQueries() {
+    return Stream.generate(this.fullQueries.entrySet().iterator()::next)
+                 .parallel()
+                 .map(
+                   (Entry<Long, RankedQuery> e) ->
+                     new Pair<Long, RankedQuery>(e.getKey(), e.getValue())
+                  );
+  }
 
   public void registerQuery(String query) {
     if (this.sealed.get()) {
@@ -26,6 +38,7 @@ public class InMemoryStore implements Store {
   public void finishedRegisteringQueries() {
     this.sealed.set(true);
     this.indexQueries();
+    this.fullToCount.clear();
   }
 
   public void registerFragment(String token, Long id) {
@@ -34,7 +47,7 @@ public class InMemoryStore implements Store {
       final List<Long> hits = maybeHits.get();
       synchronized (hits) { hits.add(id); }
     } else {
-      this.fragmentToSuggestion.put(token, Arrays.asList(id));
+      this.fragmentToSuggestion.put(token, new LinkedList<Long>(Arrays.asList(id)));
     }
   }
 
