@@ -11,26 +11,23 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Spliterators;
 import java.util.Spliterator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.Comparator;
 
 public final class InMemoryStore implements Store {
   private final AtomicBoolean sealed = new AtomicBoolean(false);
   private final ConcurrentHashMap<String, Long> fullToCount = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, List<Long>> fragmentToSuggestion = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<Long, RankedQuery> fullQueries = new ConcurrentHashMap<>();
-  private final AtomicLong idSerial = new AtomicLong(0);
+  private final AtomicLong idSerial = new AtomicLong();
+  private final AtomicLong numQueries = new AtomicLong();
+  private final AtomicLong numTokens = new AtomicLong();
 
-  public List<RankedQuery> suggestionForFragment(String fragment) {
+  public Stream<RankedQuery> suggestionForFragment(String fragment) {
     return this.fragmentToSuggestion
                .getOrDefault(fragment, new LinkedList<Long>())
                .stream()
-               .map(fullQueries::get)
-               .sorted(Comparator.reverseOrder())
-               .limit(10)
-               .collect(Collectors.toList());
+               .map(fullQueries::get);
   }
 
   public Stream<Pair<Long, RankedQuery>> allQueries() {
@@ -47,11 +44,12 @@ public final class InMemoryStore implements Store {
   }
 
   public void registerQuery(String query) {
-    if (this.sealed.get()) {
-      return;
-    }
+    if (this.sealed.get()) { return; }
     this.fullToCount.computeIfPresent(query, (String _k, Long v) -> v + 1);
-    this.fullToCount.putIfAbsent(query, 1L);
+    if (!this.fullToCount.containsKey(query)) {
+      this.fullToCount.put(query, 1L);
+      this.numQueries.incrementAndGet();
+    }
   }
 
   public void finishedRegisteringQueries() {
@@ -67,8 +65,12 @@ public final class InMemoryStore implements Store {
       synchronized (hits) { hits.add(id); }
     } else {
       this.fragmentToSuggestion.put(token, new LinkedList<Long>(Arrays.asList(id)));
+      this.numTokens.incrementAndGet();
     }
   }
+
+  public Long getNumQueries() { return this.numQueries.get(); }
+  public Long getNumTokens() { return this.numTokens.get(); }
 
   private void indexQueries() {
     this.fullToCount.forEachEntry(1L, (Entry<String, Long> entry) -> {

@@ -2,7 +2,6 @@ package suggest.store;
 
 import suggest.Pair;
 import java.util.stream.Stream;
-import java.util.List;
 
 public interface Store {
   public final class RankedQuery implements Comparable<RankedQuery> {
@@ -20,7 +19,12 @@ public interface Store {
     }
   }
 
-  public List<RankedQuery> suggestionForFragment(String fragment);
+  /**
+   * Get a list of unsorted suggestions for a given fragment
+   * @param fragment
+   * @return
+   */
+  public Stream<RankedQuery> suggestionForFragment(String fragment);
 
   /**
    * Get all queries (id, meta)
@@ -45,4 +49,16 @@ public interface Store {
    * @param id
    */
   public void registerFragment(String token, Long id);
+
+  /**
+   * How many queries are indexed?
+   * @return
+   */
+  public Long getNumQueries();
+
+  /**
+   * How many suggest tokens are indexed?
+   * @return
+   */
+  public Long getNumTokens();
 }

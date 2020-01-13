@@ -1,5 +1,22 @@
 # suggest
-A stab at implementing a Google-style typeahead suggestion from a dump of previous queries.
+A stab at implementing a Google-style typeahead suggestion from a dump of previous queries. Written in pure Java 8 with no external dependencies.
+
+## Getting Started
+
+```bash
+wget http://www.cim.mcgill.ca/~dudek/206/Logs/AOL-user-ct-collection/aol-data.tar.gz
+tar -xvf aol-data.tar.gz
+gunzip AOL-user-ct-collection/user-ct-test-collection-01.txt.gz
+# Skip the first line, and take the 
+tail -n +2 AOL-user-ct-collection/user-ct-test-collection-01.txt | cut -f2 > justquery.txt
+gradle --console plain run
+```
+
+```
+suggest> loadfile justquery.txt
+suggest> iphone
+
+```
 
 ## Data
 

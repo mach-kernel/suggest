@@ -1,6 +1,7 @@
 package suggest;
 
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import suggest.store.Store;
 import suggest.store.Store.RankedQuery;
@@ -9,7 +10,9 @@ public final class Tokenizer {
   private final static double FRAGMENT_MAX_LEN_RATIO = 0.75;
 
   public static void buildSuggestions(Store store) {
-    store.allQueries().parallel().forEach((Pair<Long, RankedQuery> p) -> {
+    Stream<Pair<Long, RankedQuery>> allQueryStream = store.allQueries().parallel();
+
+    allQueryStream.forEach((Pair<Long, RankedQuery> p) -> {
       final String[] tokens = fragmentQuery(p.r.query);
       for (final String token : tokens) {
         store.registerFragment(token, p.l);

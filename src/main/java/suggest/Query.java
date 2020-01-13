@@ -3,6 +3,7 @@ package suggest;
 import suggest.store.Store;
 import suggest.store.Store.RankedQuery;
 import java.util.Optional;
+import java.util.Comparator;
 
 public final class Query {
   private Optional<Store> maybeStore = Optional.empty();
@@ -22,6 +23,8 @@ public final class Query {
     final String query = String.join(" ", args);
 
     store.suggestionForFragment(query)
+         .sorted(Comparator.reverseOrder())
+         .limit(10)
          .forEach((RankedQuery q) -> System.out.printf("%d - %s\n", q.rank, q.query));
   }
 }

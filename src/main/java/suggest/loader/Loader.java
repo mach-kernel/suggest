@@ -38,16 +38,16 @@ public abstract class Loader {
     }
     
     Store targetStore = this.target.get();
-    Stream<String> rawQueries = this.data.get();
+    Stream<String> rawQueries = this.data.get().parallel();
 
     System.out.println("Registering queries");
-    rawQueries.parallel().forEach(targetStore::registerQuery);
+    rawQueries.forEach(targetStore::registerQuery);
     targetStore.finishedRegisteringQueries();
-    System.out.println("Finished registering queries");
+    System.out.printf("Finished registering %d queries\n", targetStore.getNumQueries());
 
     System.out.println("Making suggestion tokens");
     Tokenizer.buildSuggestions(targetStore);
-    System.out.println("Load complete");
+    System.out.printf("Load complete, %d total tokens\n", targetStore.getNumTokens());
   }
 
   private Optional<Store> target = Optional.empty();
