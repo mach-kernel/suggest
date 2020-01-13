@@ -1,6 +1,8 @@
 # suggest
 A stab at implementing a Google-style typeahead suggestion from a dump of previous queries. Written in pure Java 8 with no external dependencies.
 
+![](https://i.imgur.com/mZtpfb9.gif)
+
 ## Getting Started
 
 ```bash
@@ -14,8 +16,17 @@ gradle --console plain run
 
 ```
 suggest> loadfile justquery.txt
-suggest> iphone
-
+suggest> suggest food
+347 - food network
+218 - foodnetwork.com
+198 - foodnetwork
+115 - foodtv
+69 - foodtv.com
+68 - food network.com
+61 - food jokes
+55 - food tv
+41 - food channel
+39 - food stamps
 ```
 
 ## Data
