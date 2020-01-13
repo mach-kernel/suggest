@@ -2,9 +2,10 @@ package suggest.store;
 
 import suggest.Pair;
 import java.util.stream.Stream;
+import java.util.List;
 
 public interface Store {
-  public final class RankedQuery {
+  public final class RankedQuery implements Comparable<RankedQuery> {
     public final String query;
     // The number of times users searched the same exact query
     public final Long rank;
@@ -13,7 +14,13 @@ public interface Store {
       this.query = query;
       this.rank = rank;
     }
+
+    public int compareTo(RankedQuery other) {
+      return this.rank.compareTo(other.rank);
+    }
   }
+
+  public List<RankedQuery> suggestionForFragment(String fragment);
 
   /**
    * Get all queries (id, meta)

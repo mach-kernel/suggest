@@ -9,7 +9,12 @@ import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Spliterators;
+import java.util.Spliterator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.Comparator;
 
 public final class InMemoryStore implements Store {
   private final AtomicBoolean sealed = new AtomicBoolean(false);
@@ -18,13 +23,27 @@ public final class InMemoryStore implements Store {
   private final ConcurrentHashMap<Long, RankedQuery> fullQueries = new ConcurrentHashMap<>();
   private final AtomicLong idSerial = new AtomicLong(0);
 
+  public List<RankedQuery> suggestionForFragment(String fragment) {
+    return this.fragmentToSuggestion
+               .getOrDefault(fragment, new LinkedList<Long>())
+               .stream()
+               .map(fullQueries::get)
+               .sorted(Comparator.reverseOrder())
+               .limit(10)
+               .collect(Collectors.toList());
+  }
+
   public Stream<Pair<Long, RankedQuery>> allQueries() {
-    return Stream.generate(this.fullQueries.entrySet().iterator()::next)
-                 .parallel()
-                 .map(
-                   (Entry<Long, RankedQuery> e) ->
-                     new Pair<Long, RankedQuery>(e.getKey(), e.getValue())
-                  );
+    Spliterator<Entry<Long, RankedQuery>> spliterator = Spliterators.spliteratorUnknownSize(
+      this.fullQueries.entrySet().iterator(),
+      0
+    );
+
+    return StreamSupport.stream(spliterator, true)
+                        .map(
+                          (Entry<Long, RankedQuery> e) ->
+                            new Pair<Long, RankedQuery>(e.getKey(), e.getValue())
+                          );
   }
 
   public void registerQuery(String query) {

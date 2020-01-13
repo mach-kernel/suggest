@@ -5,8 +5,8 @@ import java.util.stream.IntStream;
 import suggest.store.Store;
 import suggest.store.Store.RankedQuery;
 
-public class Tokenizer {
-  private static double FRAGMENT_MAX_LEN_RATIO = 0.75;
+public final class Tokenizer {
+  private final static double FRAGMENT_MAX_LEN_RATIO = 0.75;
 
   public static void buildSuggestions(Store store) {
     store.allQueries().parallel().forEach((Pair<Long, RankedQuery> p) -> {
